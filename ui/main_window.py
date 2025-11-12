@@ -1,0 +1,286 @@
+import threading
+from pathlib import Path
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
+
+from config import OUTPUT_DIR
+from core.audio_extractor import AudioExtractor
+from core.subtitle_generator import SubtitleGenerator
+from core.transcriber import Transcriber
+from core.translator import Translator
+from core.video_processor import VideoProcessor
+
+
+class MainWindow(ctk.CTk):
+    """Main program window"""
+
+    def __init__(self):
+        super().__init__()
+
+        # Window settings
+        self.title("SUMO.AI")
+        self.geometry("800x600")
+
+        # Theme
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("blue")
+
+        # Variables
+        self.video_path = None
+        self.processing = False
+
+        # Main components
+        self.audio_extractor = AudioExtractor()
+        self.transcriber = Transcriber()
+        self.translator = Translator()
+        self.subtitle_gen = SubtitleGenerator()
+        self.video_processor = VideoProcessor()
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Building the user interface"""
+
+        # Title
+        title_label = ctk.CTkLabel(
+            self,
+            text="AutoSubtitle Pro",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+
+        # File selection frame
+        file_frame = ctk.CTkFrame(self)
+        file_frame.pack(pady=20, padx=40, fill="x")
+
+        self.file_label = ctk.CTkLabel(
+            file_frame,
+            text="No files selected",
+            font=ctk.CTkFont(size=12)
+        )
+        self.file_label.pack(pady=10)
+
+        select_btn = ctk.CTkButton(
+            file_frame,
+            text="Video selection",
+            command=self.select_video,
+            width=200,
+            height=40
+        )
+        select_btn.pack(pady=10)
+
+        # Settings
+        settings_frame = ctk.CTkFrame(self)
+        settings_frame.pack(pady=20, padx=40, fill="both", expand=True)
+
+        settings_label = ctk.CTkLabel(
+            settings_frame,
+            text="Settings",
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        settings_label.pack(pady=10)
+
+        # Choosing a Whisper model
+        whisper_frame = ctk.CTkFrame(settings_frame)
+        whisper_frame.pack(pady=10, padx=20, fill="x")
+
+        ctk.CTkLabel(
+            whisper_frame,
+            text="Whisper model:",
+            font=ctk.CTkFont(size=12)
+        ).pack(side="left", padx=10)
+
+        self.whisper_model = ctk.CTkOptionMenu(
+            whisper_frame,
+            values=["tiny", "base", "small", "medium", "large"],
+            width=150
+        )
+        self.whisper_model.set("base")
+        self.whisper_model.pack(side="left", padx=10)
+
+        # Choosing a translation model
+        trans_frame = ctk.CTkFrame(settings_frame)
+        trans_frame.pack(pady=10, padx=20, fill="x")
+
+        ctk.CTkLabel(
+            trans_frame,
+            text="Translation model:",
+            font=ctk.CTkFont(size=12)
+        ).pack(side="left", padx=10)
+
+        self.translation_model = ctk.CTkOptionMenu(
+            trans_frame,
+            values=[
+                "Helsinki-NLP/opus-mt-en-fa",
+                "facebook/m2m100_418M"
+            ],
+            width=250
+        )
+        self.translation_model.set("Helsinki-NLP/opus-mt-en-fa")
+        self.translation_model.pack(side="left", padx=10)
+
+        # Checkboxes
+        options_frame = ctk.CTkFrame(settings_frame)
+        options_frame.pack(pady=10, padx=20, fill="x")
+
+        self.create_bilingual = ctk.CTkCheckBox(
+            options_frame,
+            text="Create bilingual subtitles",
+            font=ctk.CTkFont(size=12)
+        )
+        self.create_bilingual.pack(pady=5)
+
+        self.embed_subtitles = ctk.CTkCheckBox(
+            options_frame,
+            text="Add subtitles to video",
+            font=ctk.CTkFont(size=12)
+        )
+        self.embed_subtitles.pack(pady=5)
+        self.embed_subtitles.select()
+
+        # Progress bar
+        self.progress_bar = ctk.CTkProgressBar(self, width=600)
+        self.progress_bar.pack(pady=10)
+        self.progress_bar.set(0)
+
+        self.status_label = ctk.CTkLabel(
+            self,
+            text="Ready",
+            font=ctk.CTkFont(size=12)
+        )
+        self.status_label.pack(pady=5)
+
+        # Processing button
+        self.process_btn = ctk.CTkButton(
+            self,
+            text="Start processing",
+            command=self.start_processing,
+            width=300,
+            height=50,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            state="disabled"
+        )
+        self.process_btn.pack(pady=20)
+
+    def select_video(self):
+        """Select video file"""
+        file_path = filedialog.askopenfilename(
+            title="Video selection",
+            filetypes=[
+                ("Video files", "*.mp4 *.avi *.mkv *.mov *.flv"),
+                ("All files", "*.*")
+            ]
+        )
+
+        if file_path:
+            self.video_path = file_path
+            self.file_label.configure(text=Path(file_path).name)
+            self.process_btn.configure(state="normal")
+
+    def update_status(self, message: str, progress: float):
+        """Status and progress updates"""
+        self.status_label.configure(text=message)
+        self.progress_bar.set(progress)
+        self.update()
+
+    def start_processing(self):
+        """Start processing in a separate thread"""
+        if self.processing:
+            return
+
+        self.processing = True
+        self.process_btn.configure(state="disabled")
+
+        # Run in a separate thread so that the UI does not freeze.
+        thread = threading.Thread(target=self.process_video)
+        thread.start()
+
+    def process_video(self):
+        """Full video processing"""
+        try:
+            video_name = Path(self.video_path).stem
+
+            # 1. Sound extraction (0-20%)
+            self.update_status("Extracting audio ...", 0.0)
+            audio_path = self.audio_extractor.extract(self.video_path)
+            self.update_status("Audio extracted", 0.2)
+
+            # 2. Transcription (20-50%)
+            self.update_status("Converting speech to text ...", 0.2)
+            self.transcriber.model_name = self.whisper_model.get()
+            transcription = self.transcriber.transcribe(audio_path)
+            segments_en = self.transcriber.get_segments(transcription)
+            self.update_status("Transcription completed", 0.5)
+
+            # 3. Save English subtitles
+            srt_en_path = OUTPUT_DIR / "subtitles" / f"{video_name}_en.srt"
+            self.subtitle_gen.generate_srt(segments_en, str(srt_en_path))
+
+            # 4. Translation (50-80%)
+            self.update_status("Translating into Persian ...", 0.5)
+            self.translator.model_name = self.translation_model.get()
+
+            texts_en = [seg['text'] for seg in segments_en]
+            texts_fa = self.translator.translate_batch(texts_en)
+
+            # Creating Persian segments
+            segments_fa = []
+            for seg_en, text_fa in zip(segments_en, texts_fa):
+                segments_fa.append({
+                    'text': text_fa,
+                    'start': seg_en['start'],
+                    'end': seg_en['end']
+                })
+
+            self.update_status("Translation completed", 0.8)
+
+            # 5. Save Persian subtitles
+            srt_fa_path = OUTPUT_DIR / "subtitles" / f"{video_name}_fa.srt"
+            self.subtitle_gen.generate_srt(segments_fa, str(srt_fa_path))
+
+            # 6. Bilingual subtitles (optional)
+            if self.create_bilingual.get():
+                srt_bilingual_path = OUTPUT_DIR / "subtitles" / f"{video_name}_bilingual.srt"
+                self.subtitle_gen.create_bilingual_srt(
+                    segments_en,
+                    segments_fa,
+                    str(srt_bilingual_path)
+                )
+
+            # 7. Add subtitles to the video (80-100%)
+            if self.embed_subtitles.get():
+                self.update_status("Adding subtitles to video ...", 0.8)
+
+                subtitle_paths = {
+                    'eng': str(srt_en_path),
+                    'per': str(srt_fa_path)
+                }
+
+                output_video = self.video_processor.add_subtitles(
+                    self.video_path,
+                    subtitle_paths,
+                    f"{video_name}_subtitled.mkv"
+                )
+
+            self.update_status("Processing complete! ✓", 1.0)
+
+            # Show success message
+            self.after(100, lambda: messagebox.showinfo(
+                "Success",
+                f"Processing complete!\n\n"
+                f"English subtitles: {srt_en_path.name}\n"
+                f"Persian subtitles: {srt_fa_path.name}\n"
+                f"{'Video with subtitles: ' + Path(output_video).name if self.embed_subtitles.get() else ''}"
+            ))
+
+        except Exception as e:
+            self.update_status(f"خطا: {str(e)}", 0.0)
+            self.after(100, lambda: messagebox.showerror(
+                "Error",
+                f"Error processing:\n{str(e)}"
+            ))
+
+        finally:
+            self.processing = False
+            self.after(100, lambda: self.process_btn.configure(state="normal"))
