@@ -20,10 +20,10 @@ class MainWindow(ctk.CTk):
 
         # Window settings
         self.title("SUMO.AI")
-        self.geometry("800x600")
+        self.geometry("360x640")
 
         # Theme
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
         # Variables
@@ -45,7 +45,7 @@ class MainWindow(ctk.CTk):
         # Title
         title_label = ctk.CTkLabel(
             self,
-            text="AutoSubtitle Pro",
+            text="SUMO.AI",
             font=ctk.CTkFont(size=24, weight="bold")
         )
         title_label.pack(pady=20)
@@ -61,14 +61,14 @@ class MainWindow(ctk.CTk):
         )
         self.file_label.pack(pady=10)
 
-        select_btn = ctk.CTkButton(
+        self.select_btn = ctk.CTkButton(
             file_frame,
             text="Video selection",
             command=self.select_video,
             width=200,
             height=40
         )
-        select_btn.pack(pady=10)
+        self.select_btn.pack(pady=10)
 
         # Settings
         settings_frame = ctk.CTkFrame(self)
@@ -147,6 +147,7 @@ class MainWindow(ctk.CTk):
         self.status_label = ctk.CTkLabel(
             self,
             text="Ready",
+            wraplength=250,
             font=ctk.CTkFont(size=12)
         )
         self.status_label.pack(pady=5)
@@ -180,20 +181,40 @@ class MainWindow(ctk.CTk):
 
     def update_status(self, message: str, progress: float):
         """Status and progress updates"""
+        self.after(0, self._update_status_ui, message, progress)
+
+    def _update_status_ui(self, message: str, progress: float):
+        """Update UI from main thread"""
         self.status_label.configure(text=message)
         self.progress_bar.set(progress)
-        self.update()
+
+        progress_percent = int(progress * 100)
+        self.title(f"SUMO.AI - {progress_percent}%")
 
     def start_processing(self):
         """Start processing in a separate thread"""
         if self.processing:
             return
 
+        if not self.video_path:
+            messagebox.showwarning("Warning", "Please select a video file first")
+            return
+
+        try:
+            from utils.validators import Validators
+            Validators.validate_video_file(self.video_path)
+            Validators.validate_file_size(self.video_path)
+        except (FileNotFoundError, ValueError, PermissionError) as e:
+            messagebox.showerror("Validation Error", str(e))
+            return
+
         self.processing = True
         self.process_btn.configure(state="disabled")
 
+        self.disable_controls(True)
+
         # Run in a separate thread so that the UI does not freeze.
-        thread = threading.Thread(target=self.process_video)
+        thread = threading.Thread(target=self.process_video, daemon=True)
         thread.start()
 
     def process_video(self):
@@ -249,6 +270,7 @@ class MainWindow(ctk.CTk):
                 )
 
             # 7. Add subtitles to the video (80-100%)
+            output_video = ""
             if self.embed_subtitles.get():
                 self.update_status("Adding subtitles to video ...", 0.8)
 
@@ -266,21 +288,50 @@ class MainWindow(ctk.CTk):
             self.update_status("Processing complete! ✓", 1.0)
 
             # Show success message
-            self.after(100, lambda: messagebox.showinfo(
-                "Success",
-                f"Processing complete!\n\n"
-                f"English subtitles: {srt_en_path.name}\n"
-                f"Persian subtitles: {srt_fa_path.name}\n"
-                f"{'Video with subtitles: ' + Path(output_video).name if self.embed_subtitles.get() else ''}"
-            ))
+            self.after(100, self._show_success, srt_en_path, srt_fa_path, Path(output_video))
 
         except Exception as e:
-            self.update_status(f"خطا: {str(e)}", 0.0)
-            self.after(100, lambda: messagebox.showerror(
-                "Error",
-                f"Error processing:\n{str(e)}"
-            ))
+            self.update_status(f"Error: Close the app then open it again", 0.0)
+            self.title("SUMO.AI - Error")
+            self.after(100, self._show_error, e)
 
         finally:
             self.processing = False
-            self.after(100, lambda: self.process_btn.configure(state="normal"))
+            self.process_btn.configure(state="normal")
+            self.disable_controls(False)
+            try:
+                from utils.file_handler import FileHandler
+                FileHandler.clean_temp_files()
+            except Exception as clean_error:
+                print(f"Cleanup error: {clean_error}")
+
+    def disable_controls(self, disabled: bool):
+        """Enable/disable UI controls during processing"""
+        state = "disabled" if disabled else "normal"
+
+        controls = [
+            self.select_btn,
+            self.whisper_model,
+            self.translation_model,
+            self.create_bilingual,
+            self.embed_subtitles
+        ]
+
+        for control in controls:
+            control.configure(state=state)
+
+    def _show_success(self, en: Path, fa: Path, ov: Path):
+        messagebox.showinfo(
+            "Success",
+            f"Processing complete!\n\n"
+            f"English subtitles: {en.name}\n"
+            f"Persian subtitles: {fa.name}\n"
+            f"{'Video with subtitles: ' + ov.name if self.embed_subtitles.get() else ''}"
+        )
+
+    def _show_error(self, e):
+        """Show error"""
+        messagebox.showerror(
+            "Error",
+            f"Error processing:\n{e}"
+        )
