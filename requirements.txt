@@ -5,3 +5,5 @@ transformers==4.57.*
 customtkinter==5.2.*
 sentencepiece==0.2.*
 ffmpeg-python==0.2.*
+huggingface_hub==0.36.0
+hf_xet
