@@ -5,23 +5,28 @@ from pathlib import Path
 class Validators:
     """Input validation"""
 
-    SUPPORTED_VIDEO_FORMATS = ['.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm']
+    SUPPORTED_VIDEO_FORMATS = ('.mp4', '.avi', '.mkv', '.mov', '.flv', '.wmv', '.webm')
 
     @staticmethod
     def validate_video_file(file_path: str) -> bool:
         """Checking the validity of the video file"""
-        if not os.path.exists(file_path):
+        path = Path(file_path)
+
+        if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        if not os.path.isfile(file_path):
+        if not path.is_file():
             raise ValueError(f"Invalid file path: {file_path}")
 
-        ext = Path(file_path).suffix.lower()
+        ext = path.suffix.lower()
         if ext not in Validators.SUPPORTED_VIDEO_FORMATS:
             raise ValueError(
                 f"Unsupported video format: {ext}\n"
                 f"Supported formats: {', '.join(Validators.SUPPORTED_VIDEO_FORMATS)}"
             )
+
+        if not os.access(file_path, os.R_OK):
+            raise PermissionError(f"Cannot read file: {file_path}")
 
         return True
 
