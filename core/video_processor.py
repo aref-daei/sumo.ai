@@ -2,7 +2,7 @@ from pathlib import Path
 
 import ffmpeg
 
-from config import OUTPUT_DIR
+from settings import OUTPUT_DIR
 
 
 class VideoProcessor:

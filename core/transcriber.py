@@ -2,7 +2,7 @@ from typing import List, Dict
 
 import whisper
 
-from config import WHISPER_MODEL, WHISPER_DEVICE
+from settings import WHISPER_MODEL, WHISPER_DEVICE
 
 
 class Transcriber:

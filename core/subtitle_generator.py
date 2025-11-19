@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Dict
 
-from config import SRT_ENCODING
+from settings import SRT_ENCODING
 
 
 class SubtitleGenerator:

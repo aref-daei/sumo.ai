@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import Union, List
 
-from config import TEMP_DIR
+from settings import TEMP_DIR
 
 
 class FileHandler:

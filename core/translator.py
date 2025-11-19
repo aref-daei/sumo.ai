@@ -3,7 +3,7 @@ from typing import List
 import torch
 from transformers import MarianMTModel, MarianTokenizer, M2M100ForConditionalGeneration, M2M100Tokenizer
 
-from config import TRANSLATION_MODEL, MAX_TRANSLATION_LENGTH, BATCH_SIZE
+from settings import TRANSLATION_MODEL, MAX_TRANSLATION_LENGTH, BATCH_SIZE
 
 
 class Translator:

@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
-from config import PROJECT_NAME, OUTPUT_DIR
+from settings import PROJECT_NAME, OUTPUT_DIR
 from core.audio_extractor import AudioExtractor
 from core.subtitle_generator import SubtitleGenerator
 from core.transcriber import Transcriber
@@ -113,6 +113,7 @@ class MainWindow(ctk.CTk):
             trans_frame,
             values=[
                 "Helsinki-NLP/opus-mt-en-fa",
+                "Google Translate API",
                 "facebook/m2m100_418M"
             ],
             width=250
@@ -140,7 +141,7 @@ class MainWindow(ctk.CTk):
         self.embed_subtitles.select()
 
         # Progress bar
-        self.progress_bar = ctk.CTkProgressBar(self, width=600)
+        self.progress_bar = ctk.CTkProgressBar(self, width=260)
         self.progress_bar.pack(pady=10)
         self.progress_bar.set(0)
 
@@ -299,11 +300,6 @@ class MainWindow(ctk.CTk):
             self.processing = False
             self.process_btn.configure(state="normal")
             self.disable_controls(False)
-            try:
-                from utils.file_handler import FileHandler
-                FileHandler.clean_temp_files()
-            except Exception as clean_error:
-                print(f"Cleanup error: {clean_error}")
 
     def disable_controls(self, disabled: bool):
         """Enable/disable UI controls during processing"""
