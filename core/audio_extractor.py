@@ -2,7 +2,8 @@ from pathlib import Path
 
 import ffmpeg
 
-from config import TEMP_DIR, FFMPEG_AUDIO_RATE, FFMPEG_AUDIO_CODEC
+from settings import AUDIO_FORMAT, AUDIO_CODEC, AUDIO_RATE, TEMP_DIR
+from exceptions.audio_extractor_exc import *
 
 
 class AudioExtractor:
@@ -19,44 +20,31 @@ class AudioExtractor:
         except ffmpeg.Error:
             pass
         except FileNotFoundError:
-            raise RuntimeError(
-                "ffmpeg is not installed. Please download from https://ffmpeg.org"
-            )
+            raise FFmpegNotInstalledError("FFmpeg is not installed")
 
     @staticmethod
-    def extract(video_path: str, output_name: str = None) -> str:
-        """
-        Extract audio from video
-
-        Args:
-            video_path: video file path
-            output_name: output file name (optional)
-
-        Returns:
-            Path to the extracted audio file
-        """
-        if output_name is None:
-            output_name = f"{Path(video_path).stem}_audio.wav"
-
-        output_path = TEMP_DIR / output_name
-
+    def extract(video_path: str) -> str:
+        """Extract audio from video"""
         try:
-            # Audio extraction with optimized settings for Whisper
+            audio_path = TEMP_DIR / f"{Path(video_path).stem}_audio.{AUDIO_FORMAT}"
+            audio_path = str(audio_path)
+
             stream = ffmpeg.input(video_path)
             stream = ffmpeg.output(
                 stream,
-                str(output_path),
-                acodec=FFMPEG_AUDIO_CODEC,
-                ar=FFMPEG_AUDIO_RATE,
-                ac=1  # Convert to mono
+                audio_path,
+                acodec=AUDIO_CODEC,
+                ac=1,  # Convert to mono
+                ar=AUDIO_RATE,
+                loglevel="error"
             )
             ffmpeg.run(stream, overwrite_output=True, capture_stderr=True)
 
-            return str(output_path)
+            return audio_path
 
         except ffmpeg.Error as e:
             error_message = e.stderr.decode() if e.stderr else str(e)
-            raise RuntimeError(f"Error extracting audio: {error_message}")
+            raise AudioExtractionError(f"Error extracting audio: {error_message}")
 
     @staticmethod
     def get_video_duration(video_path: str) -> float:
@@ -66,4 +54,4 @@ class AudioExtractor:
             duration = float(probe['format']['duration'])
             return duration
         except Exception as e:
-            raise RuntimeError(f"Error reading video information: {e}")
+            raise VideoProbeError(f"Error reading video information: {e}")
