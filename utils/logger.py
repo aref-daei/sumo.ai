@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from config import BASE_DIR
+from settings import OUTPUT_DIR
 
 
 class Logger:
@@ -24,11 +24,11 @@ class Logger:
             self.logger.setLevel(logging.DEBUG)
 
             # Log directory
-            log_dir = BASE_DIR / "logs"
+            log_dir = OUTPUT_DIR / "logs"
             log_dir.mkdir(exist_ok=True)
 
             # Log file with date
-            log_file = log_dir / f"app_{datetime.now().strftime('%Y%m%d')}.log"
+            log_file = log_dir / f"log_{datetime.now().strftime('%Y%m%d')}.log"
 
             # Format
             formatter = logging.Formatter(
