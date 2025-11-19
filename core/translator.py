@@ -1,7 +1,7 @@
 from typing import List
 
 import torch
-from transformers import MarianMTModel, MarianTokenizer, M2M100ForConditionalGeneration, M2M100Tokenizer
+from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
 
 from settings import TRANSLATION_MODEL, MAX_TRANSLATION_LENGTH, BATCH_SIZE
 
@@ -19,32 +19,20 @@ class Translator:
     def load_model(self):
         """Loading translation model"""
         if self.model is None:
-            print(f"Loading translation model: {self.model_name}")
-
-            if "opus-mt" in self.model_name:
-                # Helsinki-NLP models
-                self.tokenizer = MarianTokenizer.from_pretrained(self.model_name)
-                self.model = MarianMTModel.from_pretrained(self.model_name)
-            elif "m2m100" in self.model_name:
-                # M2M100 models
+            if "m2m100_418M" in self.model_name:
+                # M2M100 418M models
                 self.tokenizer = M2M100Tokenizer.from_pretrained(self.model_name)
                 self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_name)
                 self.tokenizer.src_lang = "en"
                 self.tokenizer.tgt_lang = "fa"
+            elif "m2m100_1.2B" in self.model_name:
+                # M2M100 1.2B models
+                pass
 
             self.model.to(self.device)
-            print("Translation model loaded")
 
     def translate_text(self, text: str) -> str:
-        """
-        Translating a text
-
-        Args:
-            text: English text
-
-        Returns:
-            Persian text
-        """
+        """Translating a text"""
         self.load_model()
 
         if not text.strip():
