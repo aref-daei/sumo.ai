@@ -20,7 +20,7 @@ class MainWindow(ctk.CTk):
 
         # Window settings
         self.title(f"{PROJECT_NAME}")
-        self.geometry("360x640")
+        self.geometry("460x640")
 
         # Theme
         ctk.set_appearance_mode("light")
@@ -97,7 +97,7 @@ class MainWindow(ctk.CTk):
             width=150
         )
         self.whisper_model.set("base")
-        self.whisper_model.pack(side="left", padx=10)
+        self.whisper_model.pack(side="right", padx=10)
 
         # Choosing a translation model
         trans_frame = ctk.CTkFrame(settings_frame)
@@ -112,14 +112,14 @@ class MainWindow(ctk.CTk):
         self.translation_model = ctk.CTkOptionMenu(
             trans_frame,
             values=[
-                "Helsinki-NLP/opus-mt-en-fa",
-                "Google Translate API",
-                "facebook/m2m100_418M"
+                "Google Translate (googletrans)",
+                "M2M100 418M (m2m100_418M)",
+                "M2M100 1.2B (m2m100_1.2B)"
             ],
             width=250
         )
-        self.translation_model.set("Helsinki-NLP/opus-mt-en-fa")
-        self.translation_model.pack(side="left", padx=10)
+        self.translation_model.set("Google Translate (googletrans)")
+        self.translation_model.pack(side="right", padx=10)
 
         # Checkboxes
         options_frame = ctk.CTkFrame(settings_frame)
