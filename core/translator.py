@@ -3,6 +3,7 @@ from typing import List
 import torch
 from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
 
+from exceptions.translator_exc import UnsupportedModelError
 from settings import TRANSLATION_MODEL, MAX_TRANSLATION_LENGTH, BATCH_SIZE
 
 
@@ -14,21 +15,22 @@ class Translator:
         self.model = None
         self.tokenizer = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Using the device: {self.device}")
 
     def load_model(self):
         """Loading translation model"""
         if self.model is None:
             if "m2m100_418M" in self.model_name:
                 # M2M100 418M models
-                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
                 self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_418M")
-                self.tokenizer.src_lang = "en"
-                self.tokenizer.tgt_lang = "fa"
+                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
             elif "m2m100_1.2B" in self.model_name:
                 # M2M100 1.2B models
-                pass
+                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_1.2B")
+                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_1.2B")
+            else:
+                raise UnsupportedModelError(f"Unsupported model: {self.model_name}")
 
+            self.tokenizer.src_lang = "en"
             self.model.to(self.device)
 
     def translate_text(self, text: str) -> str:
@@ -53,7 +55,8 @@ class Translator:
                 **inputs,
                 max_length=MAX_TRANSLATION_LENGTH,
                 num_beams=4,
-                early_stopping=True
+                early_stopping=True,
+                forced_bos_token_id=self.tokenizer.get_lang_id("fa")
             )
 
         # Decode
@@ -65,15 +68,7 @@ class Translator:
         return translated_text.strip()
 
     def translate_batch(self, texts: List[str]) -> List[str]:
-        """
-        Batch translation of texts (faster)
-
-        Args:
-            texts: List of English texts
-
-        Returns:
-            List of Persian texts
-        """
+        """Batch translation of texts"""
         self.load_model()
 
         translations = []
@@ -104,7 +99,8 @@ class Translator:
                     **inputs,
                     max_length=MAX_TRANSLATION_LENGTH,
                     num_beams=4,
-                    early_stopping=True
+                    early_stopping=True,
+                    forced_bos_token_id=self.tokenizer.get_lang_id("fa")
                 )
 
             # Decode
@@ -114,7 +110,5 @@ class Translator:
             ]
 
             translations.extend(batch_translations)
-
-            print(f"Translated: {i + len(batch)}/{len(texts)}")
 
         return translations
