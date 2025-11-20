@@ -21,8 +21,8 @@ class Translator:
         if self.model is None:
             if "m2m100_418M" in self.model_name:
                 # M2M100 418M models
-                self.tokenizer = M2M100Tokenizer.from_pretrained(self.model_name)
-                self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_name)
+                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
+                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_418M")
                 self.tokenizer.src_lang = "en"
                 self.tokenizer.tgt_lang = "fa"
             elif "m2m100_1.2B" in self.model_name:
