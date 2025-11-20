@@ -54,7 +54,7 @@ WHISPER_MODEL = "base"  # tiny, base, small, medium, large
 WHISPER_DEVICE = "cpu"  # or "cuda"
 
 # Translation model
-TRANSLATION_MODEL = "Helsinki-NLP/opus-mt-en-fa"
+TRANSLATION_MODEL = "facebook/m2m100_418M"
 
 # Batch size
 BATCH_SIZE = 8
