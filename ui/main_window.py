@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
-from settings import PROJECT_NAME, OUTPUT_DIR
+from settings import PROJECT_NAME, TEMP_DIR
 from core.audio_extractor import AudioExtractor
 from core.subtitle_generator import SubtitleGenerator
 from core.transcriber import Transcriber
@@ -235,7 +235,7 @@ class MainWindow(ctk.CTk):
             self.update_status("Transcription completed", 0.5)
 
             # 3. Save English subtitles
-            srt_en_path = OUTPUT_DIR / "subtitles" / f"{video_name}_en.srt"
+            srt_en_path = TEMP_DIR / f"{video_name}_en.srt"
             self.subtitle_gen.generate_srt(segments_en, str(srt_en_path))
 
             # 4. Translation (50-80%)
@@ -257,12 +257,12 @@ class MainWindow(ctk.CTk):
             self.update_status("Translation completed", 0.8)
 
             # 5. Save Persian subtitles
-            srt_fa_path = OUTPUT_DIR / "subtitles" / f"{video_name}_fa.srt"
+            srt_fa_path = TEMP_DIR / f"{video_name}_fa.srt"
             self.subtitle_gen.generate_srt(segments_fa, str(srt_fa_path))
 
             # 6. Bilingual subtitles (optional)
             if self.create_bilingual.get():
-                srt_bilingual_path = OUTPUT_DIR / "subtitles" / f"{video_name}_bilingual.srt"
+                srt_bilingual_path = TEMP_DIR / f"{video_name}_bilingual.srt"
                 self.subtitle_gen.create_bilingual_srt(
                     segments_en,
                     segments_fa,

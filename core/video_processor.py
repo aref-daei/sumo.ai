@@ -26,7 +26,7 @@ class VideoProcessor:
         if output_name is None:
             output_name = f"{Path(video_path).stem}_subtitled.mkv"
 
-        output_path = OUTPUT_DIR / "videos" / output_name
+        output_path = OUTPUT_DIR / output_name
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
