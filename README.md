@@ -24,9 +24,9 @@ Convert English videos to videos with Persian and English subtitles using AI.
 
 ## 📋 Prerequisites
 
-- Python 3.10 or higher
+- Python 3.12 or higher
 - ffmpeg
-- 4GB+ RAM (8GB+ recommended)
+- 8GB RAM (16GB recommended)
 - GPU optional (for faster processing)
 
 ---
