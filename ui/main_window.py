@@ -10,6 +10,7 @@ from core.subtitle_generator import SubtitleGenerator
 from core.transcriber import Transcriber
 from core.translator import Translator
 from core.video_processor import VideoProcessor
+from utils.file_handler import FileHandler
 
 
 class MainWindow(ctk.CTk):
@@ -127,7 +128,8 @@ class MainWindow(ctk.CTk):
         self.create_bilingual = ctk.CTkCheckBox(
             options_frame,
             text="Create bilingual subtitles",
-            font=ctk.CTkFont(size=12)
+            font=ctk.CTkFont(size=12),
+            state="disabled"
         )
         self.create_bilingual.pack(pady=5)
 
@@ -299,6 +301,7 @@ class MainWindow(ctk.CTk):
             self.processing = False
             self.process_btn.configure(state="normal")
             self.disable_controls(False)
+            FileHandler.clean_temp_files()
 
     def disable_controls(self, disabled: bool):
         """Enable/disable UI controls during processing"""
@@ -308,7 +311,6 @@ class MainWindow(ctk.CTk):
             self.select_btn,
             self.whisper_model,
             self.translation_model,
-            self.create_bilingual,
             self.embed_subtitles
         ]
 
