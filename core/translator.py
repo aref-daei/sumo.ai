@@ -21,12 +21,12 @@ class Translator:
         if self.model is None:
             if "m2m100_418M" in self.model_name:
                 # M2M100 418M models
-                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_418M")
-                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
+                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_418M", local_files_only=True)
+                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M", local_files_only=True)
             elif "m2m100_1.2B" in self.model_name:
                 # M2M100 1.2B models
-                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_1.2B")
-                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_1.2B")
+                self.model = M2M100ForConditionalGeneration.from_pretrained("facebook/m2m100_1.2B", local_files_only=True)
+                self.tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_1.2B", local_files_only=True)
             else:
                 raise UnsupportedModelError(f"Unsupported model: {self.model_name}")
 
