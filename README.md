@@ -1,4 +1,4 @@
-# SUMO.AI 🎬
+# Ziro.ai 🎬
 
 [Persian](README.fa.md)
 
