@@ -9,15 +9,7 @@ class SubtitleGenerator:
 
     @staticmethod
     def format_timestamp(seconds: float) -> str:
-        """
-        Convert seconds to SRT format: 00:00:00,000
-
-        Args:
-            seconds: time in seconds
-
-        Returns:
-            formatted string
-        """
+        """Convert seconds to SRT format: 00:00:00,000"""
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         secs = int(seconds % 60)
