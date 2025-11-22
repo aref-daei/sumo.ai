@@ -1,0 +1,2 @@
+class SubtitleAddError(RuntimeError):
+    pass
