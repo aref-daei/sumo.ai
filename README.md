@@ -47,7 +47,7 @@ Convert English videos into fully processed content enriched with both Persian a
 ## ⚙️ Offline Model Setup
 
 > ⚠️ **Warning:** The download size of the M2M100 (418M parameters) model exceeds **1.4 GB**. Please ensure you have enough storage space and a stable internet connection before starting the download.
-> _The M2M100 (1.2B parameters) model is over 4.7 GB._
+> _The M2M100 (1.2B parameters) model is over **4.7 GB**. [Learn more](model_sizes.md)_
 
 To run the translation models completely offline and prevent any connection attempts to HuggingFace servers, follow these steps:
 
