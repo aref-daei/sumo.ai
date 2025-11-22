@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from settings import OUTPUT_DIR
+from settings import PROJECT_NAME, OUTPUT_DIR, DEBUG
 
 
 class Logger:
@@ -9,16 +9,21 @@ class Logger:
 
     _instances = {}
 
-    def __new__(cls, name: str = "SUMO.AI"):
+    def __new__(cls, name: str = PROJECT_NAME):
         if name not in cls._instances:
             cls._instances[name] = super().__new__(cls)
         return cls._instances[name]
 
-    def __init__(self, name: str = "SUMO.AI"):
+    def __init__(self, name: str = PROJECT_NAME):
         if hasattr(self, '_initialized') and self._initialized:
             return
 
         self.logger = logging.getLogger(name)
+
+        if not DEBUG:
+            self.logger.disabled = True
+            self._initialized = True
+            return
 
         if not self.logger.handlers:
             self.logger.setLevel(logging.DEBUG)
@@ -55,13 +60,17 @@ class Logger:
         self._initialized = True
 
     def info(self, message: str):
-        self.logger.info(message)
+        if DEBUG:
+            self.logger.info(message)
 
     def error(self, message: str):
-        self.logger.error(message)
+        if DEBUG:
+            self.logger.error(message)
 
     def warning(self, message: str):
-        self.logger.warning(message)
+        if DEBUG:
+            self.logger.warning(message)
 
     def debug(self, message: str):
-        self.logger.debug(message)
+        if DEBUG:
+            self.logger.debug(message)
