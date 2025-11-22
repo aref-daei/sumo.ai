@@ -34,11 +34,9 @@ class FileHandler:
         return f"{size:.2f} {units[unit_index]}"
 
     @staticmethod
-    def clean_temp_files(verbose: bool = False) -> int:
+    def clean_temp_files() -> int:
         """Clear all temporary files and directories"""
         if not TEMP_DIR.exists():
-            if verbose:
-                print(f"Temp directory {TEMP_DIR} does not exist")
             return 0
 
         deleted_count = 0
@@ -49,13 +47,8 @@ class FileHandler:
                 elif item.is_dir():
                     shutil.rmtree(item)
                 deleted_count += 1
-                if verbose:
-                    print(f"Deleted: {item}")
             except Exception as e:
                 print(f"Error deleting {item}: {e}")
-
-        if verbose:
-            print(f"Total deleted: {deleted_count} items")
 
         return deleted_count
 
