@@ -2,6 +2,7 @@ from pathlib import Path
 
 import ffmpeg
 
+from exceptions.video_processor_exc import SubtitleAddError
 from settings import OUTPUT_DIR
 
 
@@ -72,4 +73,4 @@ class VideoProcessor:
 
         except ffmpeg.Error as e:
             error_message = e.stderr.decode() if e.stderr else str(e)
-            raise RuntimeError(f"Error adding subtitle: {error_message}")
+            raise SubtitleAddError(f"Error adding subtitle: {error_message}")
