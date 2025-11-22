@@ -9,9 +9,6 @@ from exceptions.audio_extractor_exc import *
 class AudioExtractor:
     """Extract audio from video with ffmpeg"""
 
-    def __init__(self):
-        self.verify_ffmpeg()
-
     @staticmethod
     def extract(video_path: str) -> str:
         """Extract audio from video"""
