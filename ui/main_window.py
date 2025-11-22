@@ -21,11 +21,12 @@ class MainWindow(ctk.CTk):
 
         # Window settings
         self.title(f"{PROJECT_NAME}")
+        self.iconbitmap(f"{Path(__file__).resolve().parent / "Ziro.ico"}")
         self.geometry("460x640")
 
         # Theme
         ctk.set_appearance_mode("light")
-        ctk.set_default_color_theme("blue")
+        ctk.set_default_color_theme("green")
 
         # Variables
         self.video_path = None
