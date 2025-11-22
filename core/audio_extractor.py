@@ -13,16 +13,6 @@ class AudioExtractor:
         self.verify_ffmpeg()
 
     @staticmethod
-    def verify_ffmpeg():
-        """Check if ffmpeg is installed"""
-        try:
-            ffmpeg.probe("test")
-        except ffmpeg.Error:
-            pass
-        except FileNotFoundError:
-            raise FFmpegNotInstalledError("FFmpeg is not installed")
-
-    @staticmethod
     def extract(video_path: str) -> str:
         """Extract audio from video"""
         try:
