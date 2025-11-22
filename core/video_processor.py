@@ -68,7 +68,6 @@ class VideoProcessor:
                 capture_stderr=True
             )
 
-            print(f"Video created with subtitles: {output_path}")
             return str(output_path)
 
         except ffmpeg.Error as e:

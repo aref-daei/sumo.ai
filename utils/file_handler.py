@@ -48,7 +48,7 @@ class FileHandler:
                     shutil.rmtree(item)
                 deleted_count += 1
             except Exception as e:
-                print(f"Error deleting {item}: {e}")
+                raise RuntimeError(f"Error deleting {item}: {e}")
 
         return deleted_count
 

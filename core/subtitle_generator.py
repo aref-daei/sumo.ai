@@ -45,7 +45,6 @@ class SubtitleGenerator:
         with open(output_path, 'w', encoding=SRT_ENCODING) as f:
             f.write('\n'.join(srt_content))
 
-        print(f"SRT file created: {output_path}")
         return str(output_path)
 
     def create_bilingual_srt(self, segments_en: List[Dict],
@@ -74,5 +73,4 @@ class SubtitleGenerator:
         with open(output_path, 'w', encoding=SRT_ENCODING) as f:
             f.write('\n'.join(srt_content))
 
-        print(f"Bilingual SRT file created: {output_path}")
         return str(output_path)
