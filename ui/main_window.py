@@ -11,6 +11,7 @@ from core.transcriber import Transcriber
 from core.translator import Translator
 from core.video_processor import VideoProcessor
 from utils.file_handler import FileHandler
+from utils.logger import Logger
 
 
 class MainWindow(ctk.CTk):
@@ -38,6 +39,9 @@ class MainWindow(ctk.CTk):
         self.translator = Translator()
         self.subtitle_gen = SubtitleGenerator()
         self.video_processor = VideoProcessor()
+
+        # Logger
+        self.logger = Logger()
 
         self.setup_ui()
 
@@ -193,6 +197,7 @@ class MainWindow(ctk.CTk):
 
         progress_percent = int(progress * 100)
         self.title(f"{PROJECT_NAME} - {progress_percent}%")
+        self.logger.info(message)
 
     def start_processing(self):
         """Start processing in a separate thread"""
@@ -293,16 +298,26 @@ class MainWindow(ctk.CTk):
             # Show success message
             self.after(100, self._show_success, srt_en_path, srt_fa_path, Path(output_video))
 
+        except RuntimeError as e:
+            self.update_status(f"Error: Please try again", 0.0)
+            self.title(f"{PROJECT_NAME} - Error")
+            self.after(100, self._show_error, e)
+            self.logger.error(f"{type(e)}: {e}")
+
         except Exception as e:
             self.update_status(f"Error: Close the app then open it again", 0.0)
             self.title(f"{PROJECT_NAME} - Error")
             self.after(100, self._show_error, e)
+            self.logger.error(f"Unexpected error: {e}")
 
         finally:
             self.processing = False
             self.process_btn.configure(state="normal")
             self.disable_controls(False)
-            FileHandler.clean_temp_files()
+            try:
+                FileHandler.clean_temp_files()
+            except RuntimeError as e:
+                self.logger.error(str(e))
 
     def disable_controls(self, disabled: bool):
         """Enable/disable UI controls during processing"""
