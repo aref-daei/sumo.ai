@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "output"
 TEMP_DIR = OUTPUT_DIR / "temp"
 
+# If DEBUG is False, disable logging completely
 DEBUG = True
 
 # Whisper settings
@@ -22,7 +23,7 @@ TRANSLATION_MODEL = "facebook/m2m100_418M"
 MAX_TRANSLATION_LENGTH = 512
 BATCH_SIZE = 8
 
-# ffmpeg settings
+# FFmpeg settings
 AUDIO_FORMAT = "wav"
 AUDIO_CODEC = "pcm_s16le"
 AUDIO_RATE = 16000
